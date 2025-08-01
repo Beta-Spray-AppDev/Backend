@@ -1,15 +1,26 @@
 server:
   port: 8080
 
+jwt:
+  secret: blabla
+
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/boulderdb
     username: postgres
-    password: ------
+    password: blabla!
 
   jpa:
     hibernate:
       ddl-auto: update         # erstellt Tabellen automatisch
     show-sql: true             # zeigt SQL-Befehle in der Konsole
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          secret-key: ${jwt.secret}
+
 
 

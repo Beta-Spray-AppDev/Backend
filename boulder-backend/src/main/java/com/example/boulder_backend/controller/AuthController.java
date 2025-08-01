@@ -28,10 +28,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginDto request) {
         // AuthService prüft, ob Login gültig ist
-        boolean success = authService.login(request);
+        String token = authService.login(request);
 
-        if (success) {
-            return ResponseEntity.ok("Login erfolgreich");
+        if (token != null) {
+            return ResponseEntity.ok(token);
         } else {
             return ResponseEntity.status(401).body("Login fehlgeschlagen");
         }
