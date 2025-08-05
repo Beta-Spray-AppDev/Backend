@@ -1,6 +1,7 @@
 package com.example.boulder_backend.service;
 
 import com.example.boulder_backend.dto.GymDto;
+import com.example.boulder_backend.dto.SpraywallDto;
 import com.example.boulder_backend.model.Gym;
 import com.example.boulder_backend.repository.GymRepository;
 import org.springframework.stereotype.Service;
@@ -33,8 +34,34 @@ public class GymService {
     }
 
 
-    public List<Gym> getAllGyms() {
-        return gymRepository.findAll();
+    public List<GymDto> getAllGymsAsDto() {
+        List<Gym> gyms = gymRepository.findAll();
+
+        return gyms.stream().map(gym -> {
+            GymDto dto = new GymDto();
+            dto.setId(gym.getId());
+            dto.setName(gym.getName());
+            dto.setLocation(gym.getLocation());
+            dto.setDescription(gym.getDescription());
+            dto.setCreatedBy(gym.getCreatedBy());
+            dto.setCreatedAt(gym.getCreatedAt());
+            dto.setLastUpdated(gym.getLastUpdated());
+
+            List<SpraywallDto> sprayDtos = gym.getSpraywalls().stream().map(s -> {
+                SpraywallDto sDto = new SpraywallDto();
+                sDto.setName(s.getName());
+                sDto.setDescription(s.getDescription());
+                sDto.setPhotoUrl(s.getPhotoUrl());
+                sDto.setPublicVisible(s.isPublic());
+                sDto.setGymId(gym.getId());
+                return sDto;
+            }).toList();
+
+            dto.setSpraywalls(sprayDtos);
+
+            return dto;
+        }).toList();
     }
+
 
 }

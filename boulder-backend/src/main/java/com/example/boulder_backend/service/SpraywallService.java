@@ -30,13 +30,14 @@ public class SpraywallService {
         spraywall.setName(dto.getName());
         spraywall.setDescription(dto.getDescription());
         spraywall.setPhotoUrl(dto.getPhotoUrl());
-        spraywall.setPublic(dto.isPublic());
+        spraywall.setPublic(dto.isPublicVisible());
         spraywall.setCreatedAt(System.currentTimeMillis());
         spraywall.setLastUpdated(System.currentTimeMillis());
         spraywall.setGym(gym);
 
         return spraywallRepository.save(spraywall);
     }
+
 
     public List<Spraywall> getAllSpraywalls() {
         return spraywallRepository.findAll();
@@ -54,7 +55,7 @@ public class SpraywallService {
         dto.setName(spraywall.getName());
         dto.setDescription(spraywall.getDescription());
         dto.setPhotoUrl(spraywall.getPhotoUrl());
-        dto.setPublic(spraywall.isPublic());
+        dto.setPublicVisible(spraywall.isPublic());
         dto.setGymId(spraywall.getGym().getId());
         return dto;
     }

@@ -35,8 +35,9 @@ public class GymController {
      * Gibt eine Liste aller Gyms zurück.
      */
     @GetMapping
-    public ResponseEntity<List<Gym>> getAllGyms() {
-        List<Gym> gyms = gymService.getAllGyms();
+    public ResponseEntity<List<GymDto>> getAllGyms() {
+        List<GymDto> gyms = gymService.getAllGymsAsDto();
         return ResponseEntity.ok(gyms);
     }
+
 }

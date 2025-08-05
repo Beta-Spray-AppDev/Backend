@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Backend.iml" filepath="$PROJECT_DIR$/.idea/Backend.iml" />
-      <module fileurl="file://$PROJECT_DIR$/boulder-backend/boulder-backend.iml" filepath="$PROJECT_DIR$/boulder-backend/boulder-backend.iml" />
     </modules>
   </component>
 </project>
