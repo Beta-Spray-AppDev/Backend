@@ -1,6 +1,7 @@
 package com.example.boulder_backend.controller;
 
 import com.example.boulder_backend.dto.BoulderDto;
+import com.example.boulder_backend.dto.HoldDto;
 import com.example.boulder_backend.model.Boulder;
 import com.example.boulder_backend.model.Hold;
 import com.example.boulder_backend.model.Spraywall;
@@ -12,7 +13,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value; 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -76,4 +77,36 @@ public class BoulderController {
 
         return ResponseEntity.ok().build();
     }
+
+
+
+
+
+    @GetMapping("/spraywall/{spraywallId}")
+    public ResponseEntity<List<BoulderDto>> getBouldersBySpraywall(@PathVariable UUID spraywallId) {
+        List<Boulder> boulders = boulderRepository.findBySpraywallId(spraywallId);
+
+        List<BoulderDto> result = boulders.stream().map(boulder -> {
+            BoulderDto dto = new BoulderDto();
+            dto.setName(boulder.getName());
+            dto.setDifficulty(boulder.getDifficulty());
+            dto.setSpraywallId(boulder.getSpraywall().getId());
+
+            dto.setHolds(
+                    boulder.getHolds().stream().map(hold -> {
+                        HoldDto holdDto = new HoldDto();
+                        holdDto.setId(hold.getId());
+                        holdDto.setX(hold.getX());
+                        holdDto.setY(hold.getY());
+                        holdDto.setType(hold.getType());
+                        return holdDto;
+                    }).toList()
+            );
+
+            return dto;
+        }).toList();
+
+        return ResponseEntity.ok(result);
+    }
+
 }

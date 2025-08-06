@@ -52,6 +52,7 @@ public class SpraywallService {
 
     public SpraywallDto toDto(Spraywall spraywall) {
         SpraywallDto dto = new SpraywallDto();
+        dto.setId(spraywall.getId());
         dto.setName(spraywall.getName());
         dto.setDescription(spraywall.getDescription());
         dto.setPhotoUrl(spraywall.getPhotoUrl());

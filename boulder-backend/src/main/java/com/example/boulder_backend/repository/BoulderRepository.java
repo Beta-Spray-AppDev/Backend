@@ -9,4 +9,5 @@ import java.util.UUID;
 public interface BoulderRepository extends JpaRepository<Boulder, UUID> {
     List<Boulder> findBySpraywallId(UUID spraywallId);
     List<Boulder> findByCreatedById(UUID userId);
+
 }

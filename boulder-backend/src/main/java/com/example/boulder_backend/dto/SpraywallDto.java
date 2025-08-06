@@ -13,4 +13,6 @@ public class SpraywallDto {
     @JsonProperty("isPublic")
     private boolean publicVisible;
     private UUID gymId;
+    private UUID id;
+
 }
