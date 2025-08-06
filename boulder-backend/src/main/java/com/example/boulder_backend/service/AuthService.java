@@ -75,6 +75,7 @@ public class AuthService {
     private String generateToken(UserEntity user) {
         return Jwts.builder()
                 .setSubject(user.getUsername())
+                .claim("userId", user.getId())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // Gültig für 24h
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
