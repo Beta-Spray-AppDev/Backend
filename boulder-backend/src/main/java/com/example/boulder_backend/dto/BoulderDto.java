@@ -11,4 +11,5 @@ public class BoulderDto {
     private String difficulty;
     private UUID spraywallId;
     private List<HoldDto> holds;
+    private UUID createdBy;
 }

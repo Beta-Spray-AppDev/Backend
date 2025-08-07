@@ -6,6 +6,7 @@ import com.example.boulder_backend.model.UserEntity;
 import com.example.boulder_backend.repository.UserRepository;
 
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,8 @@ import io.jsonwebtoken.Jwts;
 import java.security.Key;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Value;
 
 
@@ -81,6 +84,20 @@ public class AuthService {
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+
+    public UUID extractUserId(String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return UUID.fromString(claims.get("userId", String.class));
+    }
+
+
+
 
 
 }
