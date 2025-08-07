@@ -26,9 +26,7 @@ public class GymService {
         gym.setDescription(dto.getDescription());
         gym.setCreatedAt(System.currentTimeMillis());
         gym.setLastUpdated(System.currentTimeMillis());
-
-        // TEST: User-ID setzen (später aus Token)
-        gym.setCreatedBy(UUID.fromString("11111111-1111-1111-1111-111111111111"));
+        gym.setCreatedBy(dto.getCreatedBy());
 
         return gymRepository.save(gym);
     }
