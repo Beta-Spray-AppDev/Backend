@@ -71,6 +71,7 @@ public class BoulderService {
 
     private BoulderDto toDto(Boulder boulder) {
         BoulderDto dto = new BoulderDto();
+        dto.setId(boulder.getId());
         dto.setName(boulder.getName());
         dto.setDifficulty(boulder.getDifficulty());
         dto.setSpraywallId(boulder.getSpraywall().getId());
@@ -95,7 +96,7 @@ public class BoulderService {
         List<Boulder> boulders = boulderRepository.findBySpraywallId(spraywallId);
 
         return boulders.stream()
-                .map(this::toDto) // 👉 benutze schon bestehende Methode
+                .map(this::toDto)
                 .toList();
     }
 
