@@ -56,5 +56,4 @@ public class BoulderController {
         return ResponseEntity.ok(result);
     }
 
-
 }

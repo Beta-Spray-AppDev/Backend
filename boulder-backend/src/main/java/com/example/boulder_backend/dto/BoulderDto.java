@@ -7,9 +7,12 @@ import java.util.UUID;
 
 @Data
 public class BoulderDto {
+    private UUID id;
     private String name;
     private String difficulty;
     private UUID spraywallId;
     private List<HoldDto> holds;
+
     private UUID createdBy;
+
 }
