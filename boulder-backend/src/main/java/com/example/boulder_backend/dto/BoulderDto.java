@@ -15,4 +15,9 @@ public class BoulderDto {
 
     private UUID createdBy;
 
+    private Long createdAt;
+    private Long lastUpdated;
+    private String createdByUsername;
+
+
 }

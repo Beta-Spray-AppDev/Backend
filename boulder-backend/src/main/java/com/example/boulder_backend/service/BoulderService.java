@@ -78,6 +78,11 @@ public class BoulderService {
         dto.setSpraywallId(boulder.getSpraywall().getId());
         dto.setCreatedBy(boulder.getCreatedBy().getId());
 
+        dto.setCreatedAt(boulder.getCreatedAt());
+        dto.setLastUpdated(boulder.getLastUpdated());
+        dto.setCreatedByUsername(boulder.getCreatedBy().getUsername());
+
+
         dto.setHolds(
                 boulder.getHolds().stream().map(hold -> {
                     HoldDto holdDto = new HoldDto();
