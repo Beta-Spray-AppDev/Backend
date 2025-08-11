@@ -84,6 +84,8 @@ public class BoulderService {
         dto.setLastUpdated(boulder.getLastUpdated());
         dto.setCreatedByUsername(boulder.getCreatedBy().getUsername());
         dto.setSpraywallImageUrl(boulder.getSpraywall().getPhotoUrl());
+        dto.setSpraywallName(boulder.getSpraywall().getName());
+        dto.setGymName(boulder.getSpraywall().getGym().getName());
 
 
         dto.setHolds(

@@ -19,6 +19,9 @@ public class BoulderDto {
     private Long lastUpdated;
     private String createdByUsername;
     private String spraywallImageUrl;
+    private String spraywallName;
+    private String gymName;
+
 
 
 
