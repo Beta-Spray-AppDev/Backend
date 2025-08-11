@@ -14,5 +14,7 @@ public class SpraywallDto {
     private boolean publicVisible;
     private UUID gymId;
     private UUID id;
+    private UUID createdBy;
+
 
 }

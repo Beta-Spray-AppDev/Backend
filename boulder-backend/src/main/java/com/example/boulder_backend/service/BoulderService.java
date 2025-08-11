@@ -12,7 +12,9 @@ import com.example.boulder_backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -144,6 +146,26 @@ public class BoulderService {
         Boulder saved = boulderRepository.save(boulder);
         return toDto(saved);
     }
+
+    @Transactional
+    public void deleteBoulder(UUID boulderId, String authHeader) {
+        UUID userId = authService.extractUserId(authHeader);
+
+        Boulder boulder = boulderRepository.findById(boulderId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Boulder nicht gefunden"));
+
+        if (boulder.getCreatedBy() == null ||
+                !boulder.getCreatedBy().getId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Keine Berechtigung");
+        }
+
+        // Holds werden automatisch gelöscht, wenn in Boulder:
+        // @OneToMany(mappedBy="boulder", cascade=CascadeType.ALL, orphanRemoval=true)
+        boulderRepository.delete(boulder);
+    }
+
+
 
     //Mapep: DTO -> Holds
     private List<Hold> dtoToHolds(BoulderDto dto, Boulder owner) {
