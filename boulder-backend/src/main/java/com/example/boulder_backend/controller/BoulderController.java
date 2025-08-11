@@ -58,25 +58,14 @@ public class BoulderController {
 
     @GetMapping("/{boulderId}")
     public ResponseEntity<BoulderDto> getBoulderById(@PathVariable UUID boulderId) {
-        Boulder boulder = boulderRepository.findById(boulderId)
-                .orElseThrow(() -> new RuntimeException("Boulder nicht gefunden"));
+        return ResponseEntity.ok(boulderService.getBoulderById(boulderId));
+    }
 
-        BoulderDto dto = new BoulderDto();
-        dto.setName(boulder.getName());
-        dto.setDifficulty(boulder.getDifficulty());
-        dto.setSpraywallId(boulder.getSpraywall().getId());
-        dto.setHolds(
-                boulder.getHolds().stream().map(hold -> {
-                    HoldDto holdDto = new HoldDto();
-                    holdDto.setId(hold.getId());
-                    holdDto.setX(hold.getX());
-                    holdDto.setY(hold.getY());
-                    holdDto.setType(hold.getType());
-                    return holdDto;
-                }).toList()
-        );
-
-        return ResponseEntity.ok(dto);
+    @PutMapping("/{boulderId}")
+    public ResponseEntity<BoulderDto> updateBoulder(@PathVariable UUID boulderId,
+                                                    @RequestBody BoulderDto dto,
+                                                    @RequestHeader("Authorization") String authHeader) {
+        return ResponseEntity.ok(boulderService.updateBoulder(boulderId, dto, authHeader));
     }
 
 }

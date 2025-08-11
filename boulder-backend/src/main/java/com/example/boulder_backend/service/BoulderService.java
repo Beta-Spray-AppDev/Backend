@@ -9,6 +9,7 @@ import com.example.boulder_backend.model.UserEntity;
 import com.example.boulder_backend.repository.BoulderRepository;
 import com.example.boulder_backend.repository.SpraywallRepository;
 import com.example.boulder_backend.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class BoulderService {
     private final UserRepository userRepository;
     private final AuthService authService;
 
-
+    //CREATE
     public void createBoulder(BoulderDto dto, String authHeader){
 
         UUID userId = authService.extractUserId(authHeader);
@@ -59,7 +60,7 @@ public class BoulderService {
         boulderRepository.save(boulder);
 
     }
-
+    // READ: meine Boulder
     public List<BoulderDto> getMyBoulders(String authHeader) {
         UUID userId = authService.extractUserId(authHeader); //
 
@@ -68,7 +69,7 @@ public class BoulderService {
                 .map(this::toDto)
                 .toList();
     }
-
+    //Mapper: Entity -> DTO
     private BoulderDto toDto(Boulder boulder) {
         BoulderDto dto = new BoulderDto();
         dto.setId(boulder.getId());
@@ -91,13 +92,62 @@ public class BoulderService {
         return dto;
     }
 
-
+    // READ: by spraywall
     public List<BoulderDto> getBouldersBySpraywall(UUID spraywallId) {
         List<Boulder> boulders = boulderRepository.findBySpraywallId(spraywallId);
 
         return boulders.stream()
                 .map(this::toDto)
                 .toList();
+    }
+    //READ: einzelner Boulder
+    public BoulderDto getBoulderById(UUID boulderId) {
+        Boulder boulder = boulderRepository.findById(boulderId)
+                .orElseThrow(() -> new RuntimeException("Boulder nicht gefunden"));
+        return toDto(boulder);
+    }
+
+    //UPADTE: Replace
+    @Transactional
+    public BoulderDto updateBoulder(UUID boulderId, BoulderDto dto, String authHeader) {
+        UUID userId = authService.extractUserId(authHeader);
+
+        Boulder boulder = boulderRepository.findById(boulderId)
+                .orElseThrow(() -> new RuntimeException("Boulder nicht gefunden"));
+
+        // Optional: Ownership check
+        if (!boulder.getCreatedBy().getId().equals(userId)) {
+            throw new RuntimeException("Keine Berechtigung zum Bearbeiten dieses Boulders");
+        }
+
+        // Spraywall setzen (falls änderbar)
+        Spraywall spraywall = spraywallRepository.findById(dto.getSpraywallId())
+                .orElseThrow(() -> new RuntimeException("Spraywall nicht gefunden"));
+
+        boulder.setName(dto.getName());
+        boulder.setDifficulty(dto.getDifficulty());
+        boulder.setSpraywall(spraywall);
+        boulder.setLastUpdated(System.currentTimeMillis());
+
+        // Holds ersetzen (einfach & robust)
+        boulder.getHolds().clear();
+        boulder.getHolds().addAll(dtoToHolds(dto, boulder));
+
+        Boulder saved = boulderRepository.save(boulder);
+        return toDto(saved);
+    }
+
+    //Mapep: DTO -> Holds
+    private List<Hold> dtoToHolds(BoulderDto dto, Boulder owner) {
+        return dto.getHolds().stream().map(hd -> {
+            Hold h = new Hold();
+            h.setId(hd.getId());
+            h.setX(hd.getX());
+            h.setY(hd.getY());
+            h.setType(hd.getType());
+            h.setBoulder(owner);
+            return h;
+        }).toList();
     }
 
 
