@@ -69,6 +69,8 @@ public class BoulderService {
                 .map(this::toDto)
                 .toList();
     }
+
+
     //Mapper: Entity -> DTO
     private BoulderDto toDto(Boulder boulder) {
         BoulderDto dto = new BoulderDto();
@@ -81,6 +83,7 @@ public class BoulderService {
         dto.setCreatedAt(boulder.getCreatedAt());
         dto.setLastUpdated(boulder.getLastUpdated());
         dto.setCreatedByUsername(boulder.getCreatedBy().getUsername());
+        dto.setSpraywallImageUrl(boulder.getSpraywall().getPhotoUrl());
 
 
         dto.setHolds(

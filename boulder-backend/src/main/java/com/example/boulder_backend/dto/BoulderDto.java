@@ -18,6 +18,8 @@ public class BoulderDto {
     private Long createdAt;
     private Long lastUpdated;
     private String createdByUsername;
+    private String spraywallImageUrl;
+
 
 
 }
