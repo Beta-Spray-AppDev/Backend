@@ -9,5 +9,7 @@ import java.util.UUID;
 public interface SpraywallRepository extends JpaRepository<Spraywall, UUID> {
 
     List<Spraywall> findByGymId(UUID gymId);
+    List<Spraywall> findByIsPublicTrueOrCreatedBy_Id(UUID createdById);
+
 
 }

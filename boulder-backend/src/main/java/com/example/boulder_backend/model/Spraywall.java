@@ -2,6 +2,7 @@ package com.example.boulder_backend.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.apache.catalina.User;
 
 import java.util.UUID;
 
@@ -24,4 +25,9 @@ public class Spraywall {
     @ManyToOne
     @JoinColumn(name = "gym_id")
     private Gym gym;
+
+    @ManyToOne
+    @JoinColumn(name = "created_by_id", nullable = false)
+    private UserEntity createdBy;
+
 }

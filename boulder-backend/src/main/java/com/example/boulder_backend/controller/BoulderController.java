@@ -68,4 +68,17 @@ public class BoulderController {
         return ResponseEntity.ok(boulderService.updateBoulder(boulderId, dto, authHeader));
     }
 
+    @DeleteMapping("/{boulderId}")
+    public ResponseEntity<Void> deleteBoulder(
+            @PathVariable UUID boulderId,
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        boulderService.deleteBoulder(boulderId, authHeader);
+        return ResponseEntity.noContent().build(); // 204
+    }
+
+
+
+
+
 }
