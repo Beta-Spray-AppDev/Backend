@@ -1,5 +1,6 @@
 package com.example.boulder_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
@@ -24,6 +25,8 @@ public class UserEntity {
     @Column(unique = true)
     private String email;
 
+
+    @JsonIgnore
     @Column(nullable = false)
     private String passwordHash;
 

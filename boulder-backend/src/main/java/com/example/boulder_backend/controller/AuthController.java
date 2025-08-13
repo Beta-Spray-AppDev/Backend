@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,10 +27,19 @@ public class AuthController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<UserEntity> register(@RequestBody RegisterDto request) {
+    public ResponseEntity<?> register(@RequestBody RegisterDto request) {
+
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            return ResponseEntity.status(409).body("username_taken");
+        }
+
+        if (request.getEmail() != null && !request.getEmail().isBlank()
+                && userRepository.findByEmail(request.getEmail()).isPresent()) {
+            return ResponseEntity.status(409).body("email_taken");
+        }
         // Neuen User registrieren und als JSON zurückgeben
         UserEntity user = authService.register(request);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.status(201).body(user);
     }
 
     @PostMapping("/login")
