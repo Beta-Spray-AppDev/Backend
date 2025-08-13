@@ -50,7 +50,7 @@ public class AuthController {
         if (token != null) {
             return ResponseEntity.ok(token);
         } else {
-            return ResponseEntity.status(401).body("Login fehlgeschlagen");
+            return ResponseEntity.status(401).body("invalid_credentials");
         }
     }
 
