@@ -10,6 +10,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
@@ -42,33 +43,50 @@ public class AuthService {
     public UserEntity register(RegisterDto request) {
 
         //neues UserEntity-Objekt erstellen
+
+        String username = request.getUsername().trim();
+
+        String email = request.getEmail() == null ? null : request.getEmail().trim().toLowerCase();
+
+        String password = request.getPassword();
+
         UserEntity user = new UserEntity();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
+        user.setUsername(username);
+        user.setEmail(email);
 
         //pw hashen
         user.setPasswordHash(
-                BCrypt.hashpw(request.getPassword(), BCrypt.gensalt())
+                BCrypt.hashpw(password, BCrypt.gensalt())
         );
         user.setCreatedAt(System.currentTimeMillis());
 
-        //user in db schreiben
-        return userRepository.save(user);
+
+        try {
+            //user in db schreiben
+            return userRepository.save(user);
+        }
+
+        // Falls zwischen Check in Controller und Save jemand denselben username/email registriert
+        catch (DataIntegrityViolationException ex){
+            throw ex;
+        }
+
     }
 
-    public String login(LoginDto request) {
-        // User mit passendem Namen suchen
-        Optional<UserEntity> userOpt = userRepository.findAll()
-                .stream()
-                .filter(u -> u.getUsername().equals(request.getUsername()))
-                .findFirst();
+    public String login(String username, String password) {
 
+        if (username == null || username.isBlank() || password == null || password.isBlank()) {
+            return null;
+        }
+
+        // User mit passendem Namen suchen
+        Optional<UserEntity> userOpt = userRepository.findByUsername(username);
         if (userOpt.isEmpty()) return null;
 
         UserEntity user = userOpt.get();
 
         // Passwort prüfen
-        if (BCrypt.checkpw(request.getPassword(), user.getPasswordHash())) {
+        if (BCrypt.checkpw(password, user.getPasswordHash())) {
             return generateToken(user); // Token erzeugen und zurückgeben
         }
         return null;

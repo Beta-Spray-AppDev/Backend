@@ -58,6 +58,21 @@ public class SpraywallService {
                 .map(this::toDto)
                 .toList();
     }
+
+
+
+    // nur private wenn user = createdby()
+    public SpraywallDto getVisibleById(UUID id, UUID currentUserId) {
+        return spraywallRepository.findById(id)
+                .filter(s -> s.isPublic() ||
+                        (s.getCreatedBy() != null && currentUserId.equals(s.getCreatedBy().getId())))
+                .map(this::toDto)
+                .orElse(null);
+    }
+
+
+
+
     public List<SpraywallDto> getAllVisibleByGym(UUID gymId, UUID userId) {
         return spraywallRepository.findByGymId(gymId)        // hol nur dieses Gym
                 .stream()

@@ -7,6 +7,7 @@ import com.example.boulder_backend.dto.UpdateProfileDto;
 import com.example.boulder_backend.model.UserEntity;
 import com.example.boulder_backend.repository.UserRepository;
 import com.example.boulder_backend.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.oauth2.jwt.Jwt;
 import lombok.RequiredArgsConstructor;
@@ -27,14 +28,13 @@ public class AuthController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterDto request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterDto request) {
 
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             return ResponseEntity.status(409).body("username_taken");
         }
 
-        if (request.getEmail() != null && !request.getEmail().isBlank()
-                && userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             return ResponseEntity.status(409).body("email_taken");
         }
         // Neuen User registrieren und als JSON zurückgeben
@@ -43,9 +43,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginDto request) {
+    public ResponseEntity<String> login(@Valid @RequestBody LoginDto request) {
         // AuthService prüft, ob Login gültig ist
-        String token = authService.login(request);
+        String token = authService.login(request.getUsername().trim(), request.getPassword());
 
         if (token != null) {
             return ResponseEntity.ok(token);

@@ -70,4 +70,22 @@ public class SpraywallController {
 
 
 
+    @GetMapping("/{id}")
+    public ResponseEntity<SpraywallDto> getSpraywallById(
+            @PathVariable UUID id,
+            @RequestHeader("Authorization") String authHeader) {
+
+        UUID userId = authService.extractUserId(authHeader);
+        SpraywallDto dto = spraywallService.getVisibleById(id, userId);
+        if (dto == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(dto);
+    }
+
+
+
+
+
+
 }
