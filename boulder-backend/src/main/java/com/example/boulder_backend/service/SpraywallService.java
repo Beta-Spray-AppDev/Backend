@@ -58,7 +58,8 @@ public class SpraywallService {
                 .map(this::toDto)
                 .toList();
     }
-    public List<SpraywallDto> getAllVisibleByGym(UUID gymId, UUID userId) {
+    public List<SpraywallDto>
+    getAllVisibleByGym(UUID gymId, UUID userId) {
         return spraywallRepository.findByGymId(gymId)        // hol nur dieses Gym
                 .stream()
                 .filter(s -> s.isPublic() ||

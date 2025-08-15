@@ -21,7 +21,7 @@ public class Gym {
 
     private long createdAt;
     private long lastUpdated;
-
+    private boolean isPublic;
     @OneToMany(mappedBy = "gym", cascade = CascadeType.ALL)
     private List<Spraywall> spraywalls;
 }

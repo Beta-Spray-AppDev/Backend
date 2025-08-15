@@ -1,5 +1,6 @@
 package com.example.boulder_backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -15,4 +16,6 @@ public class GymDto {
     private long createdAt;
     private long lastUpdated;
     private List<SpraywallDto> spraywalls;
+    @JsonProperty("isPublic")
+    private boolean publicVisible;
 }
