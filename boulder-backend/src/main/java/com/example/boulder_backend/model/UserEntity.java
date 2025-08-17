@@ -22,6 +22,10 @@ public class UserEntity {
     @Column(unique = true, nullable = false)
     private String username;
 
+
+    @Column(name = "username_norm", nullable = false, unique = true)  //case-insensitive
+    private String usernameNorm;
+
     @Column(unique = true)
     private String email;
 

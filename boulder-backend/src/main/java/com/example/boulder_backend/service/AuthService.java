@@ -44,14 +44,17 @@ public class AuthService {
 
         //neues UserEntity-Objekt erstellen
 
-        String username = request.getUsername().trim();
+        String display = request.getUsername().trim();
+        String norm    = display.toLowerCase(java.util.Locale.ROOT);
 
-        String email = request.getEmail() == null ? null : request.getEmail().trim().toLowerCase();
+        String email   = request.getEmail() == null ? null
+                : request.getEmail().trim().toLowerCase(java.util.Locale.ROOT);
 
         String password = request.getPassword();
 
         UserEntity user = new UserEntity();
-        user.setUsername(username);
+        user.setUsername(display);
+        user.setUsernameNorm(norm);
         user.setEmail(email);
 
         //pw hashen
@@ -80,7 +83,9 @@ public class AuthService {
         }
 
         // User mit passendem Namen suchen
-        Optional<UserEntity> userOpt = userRepository.findByUsername(username);
+        String norm = username.trim().toLowerCase(java.util.Locale.ROOT);
+
+        Optional<UserEntity> userOpt = userRepository.findByUsernameNorm(norm);
         if (userOpt.isEmpty()) return null;
 
         UserEntity user = userOpt.get();

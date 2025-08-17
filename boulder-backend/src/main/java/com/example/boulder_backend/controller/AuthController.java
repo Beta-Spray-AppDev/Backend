@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,9 +31,16 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterDto request) {
 
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            return ResponseEntity.status(409).body("username_taken");
-        }
+        String normalizedEmail = request.getEmail().trim().toLowerCase();
+
+        String display = request.getUsername().trim();
+
+        String norm    = display.toLowerCase(Locale.ROOT);
+
+        request.setEmail(normalizedEmail);
+
+        if (userRepository.existsByUsernameNorm(norm)) return ResponseEntity.status(409).body("username_taken");
+
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             return ResponseEntity.status(409).body("email_taken");
@@ -88,27 +96,34 @@ public class AuthController {
 
         // Username aktualisieren, falls in Dto enthalten und nicht leer
         if (dto.getUsername() != null && !dto.getUsername().isBlank()) {
-            Optional<UserEntity> existingUser = userRepository.findByUsername(dto.getUsername());
 
-            // Wenn jemand anderes diesen Namen hat Fehler zurückgeben
-            if (existingUser.isPresent() && !existingUser.get().getId().equals(user.getId())) {
+            String display = dto.getUsername().trim();
+            String norm = display.toLowerCase(java.util.Locale.ROOT);
 
 
-                return ResponseEntity.status(409).body("username_taken");            }
+            // nur prüfen, wenn sich der Norm-Name ändert
+            if (!norm.equals(user.getUsernameNorm())
+                    && userRepository.existsByUsernameNormAndIdNot(norm, user.getId())) {
+                return ResponseEntity.status(409).body("username_taken");
+            }
 
-            // Sonst: Username setzen
-            user.setUsername(dto.getUsername());
+            user.setUsername(display);
+            user.setUsernameNorm(norm);
         }
+
 
         // Email aktualisieren, falls in Dto enthalten und nicht leer
         if (dto.getEmail() != null && !dto.getEmail().isBlank()) {
-            Optional<UserEntity> existingUser = userRepository.findByEmail(dto.getEmail());
+
+            String email = dto.getEmail().trim().toLowerCase(java.util.Locale.ROOT);
+
+            Optional<UserEntity> existingUser = userRepository.findByEmail(email);
 
             if (existingUser.isPresent() && !existingUser.get().getId().equals(user.getId())) {
                 return ResponseEntity.status(409).body("email_taken");
             }
 
-            user.setEmail(dto.getEmail());
+            user.setEmail(email);
         }
 
 
