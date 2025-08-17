@@ -1,5 +1,6 @@
 package com.example.boulder_backend.service;
 
+import com.example.boulder_backend.dto.BoulderDto;
 import com.example.boulder_backend.dto.TickDto;
 import com.example.boulder_backend.model.Boulder;
 import com.example.boulder_backend.model.BoulderTick;
@@ -8,7 +9,9 @@ import com.example.boulder_backend.repository.BoulderRepository;
 import com.example.boulder_backend.repository.BoulderTickRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -17,6 +20,7 @@ public class BoulderTickService {
     private final BoulderTickRepository tickRepo;
     private final AuthService authService;
     private final BoulderRepository boulderRepository;
+    private final BoulderService boulderService;
 
 
     // Methode zum Setzen eines Ticks
@@ -45,7 +49,19 @@ public class BoulderTickService {
 
         return toDto(tickRepo.save(t));
     }
-    
+
+    @Transactional(readOnly = true)
+    public List<BoulderDto> getMyTickedBoulders(String authHeader) {
+        UUID userId = authService.extractUserId(authHeader);
+        return tickRepo.findByUserId(userId).stream()
+                .map(BoulderTick::getBoulder)
+                .map(boulderService::toDto)
+                .toList();
+    }
+
+
+
+
     private TickDto toDto(BoulderTick t) {
         TickDto dto = new TickDto();
         dto.setId(t.getId());

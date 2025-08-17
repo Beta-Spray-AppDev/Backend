@@ -74,7 +74,7 @@ public class BoulderService {
 
 
     //Mapper: Entity -> DTO
-    private BoulderDto toDto(Boulder boulder) {
+    public BoulderDto toDto(Boulder boulder) {
         BoulderDto dto = new BoulderDto();
         dto.setId(boulder.getId());
         dto.setName(boulder.getName());
