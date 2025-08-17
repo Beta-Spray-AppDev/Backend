@@ -11,7 +11,6 @@ import com.example.boulder_backend.repository.SpraywallRepository;
 import com.example.boulder_backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -29,7 +28,7 @@ public class BoulderService {
     private final AuthService authService;
 
     //CREATE
-    public void createBoulder(BoulderDto dto, String authHeader){
+    public BoulderDto createBoulder(BoulderDto dto, String authHeader){
 
         UUID userId = authService.extractUserId(authHeader);
 
@@ -61,6 +60,7 @@ public class BoulderService {
         boulder.setHolds(holds);
         boulderRepository.save(boulder);
 
+        return dto;
     }
     // READ: meine Boulder
     public List<BoulderDto> getMyBoulders(String authHeader) {
@@ -154,18 +154,24 @@ public class BoulderService {
         UUID userId = authService.extractUserId(authHeader);
 
         Boulder boulder = boulderRepository.findById(boulderId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Boulder nicht gefunden"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Boulder nicht gefunden"));
 
-        if (boulder.getCreatedBy() == null ||
-                !boulder.getCreatedBy().getId().equals(userId)) {
+        if (boulder.getCreatedBy() == null || !boulder.getCreatedBy().getId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Keine Berechtigung");
         }
 
-        // Holds werden automatisch gelöscht, wenn in Boulder:
-        // @OneToMany(mappedBy="boulder", cascade=CascadeType.ALL, orphanRemoval=true)
-        boulderRepository.delete(boulder);
+        try {
+            boulderRepository.delete(boulder); // löscht Holds; Ticks bleiben, boulder_id -> NULL
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            // tritt nur auf, wenn FK nicht nullable/ohne ON DELETE SET NULL ist
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Löschen nicht möglich: Bitte DB-Migration für ON DELETE SET NULL ausführen.",
+                    ex
+            );
+        }
     }
+
 
 
 

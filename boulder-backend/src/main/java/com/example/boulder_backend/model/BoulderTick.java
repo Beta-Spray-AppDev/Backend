@@ -11,7 +11,11 @@ import java.util.UUID;
 public class BoulderTick {
     @Id private UUID id;
 
-    @ManyToOne @JoinColumn(name="boulder_id") private Boulder boulder;
+    @ManyToOne(optional = true)
+    @JoinColumn(name="boulder_id", nullable = true)
+    private Boulder boulder;
+
+
     @ManyToOne
     @JoinColumn(name="user_id")    private UserEntity user;
 

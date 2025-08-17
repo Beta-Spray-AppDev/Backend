@@ -35,10 +35,14 @@ public class BoulderController {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
+    // BoulderController.java
     @PostMapping
-    public ResponseEntity<Void> createBoulder(@RequestBody BoulderDto dto, @RequestHeader("Authorization") String authHeader) {
-        boulderService.createBoulder(dto, authHeader);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<BoulderDto> createBoulder(
+            @RequestBody BoulderDto dto,
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        BoulderDto created = boulderService.createBoulder(dto, authHeader); // <- jetzt DTO zurück
+        return ResponseEntity.ok(created);
     }
 
     // Holt sich alle Boulder vom eingeloggten User

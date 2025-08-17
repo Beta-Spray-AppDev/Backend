@@ -3,10 +3,13 @@ package com.example.boulder_backend.service;
 import com.example.boulder_backend.dto.GymDto;
 import com.example.boulder_backend.dto.SpraywallDto;
 import com.example.boulder_backend.model.Gym;
+import com.example.boulder_backend.model.Spraywall;
 import com.example.boulder_backend.repository.GymRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -27,39 +30,61 @@ public class GymService {
         gym.setCreatedAt(System.currentTimeMillis());
         gym.setLastUpdated(System.currentTimeMillis());
         gym.setCreatedBy(dto.getCreatedBy());
+        gym.setPublic(dto.isPublicVisible());
 
         return gymRepository.save(gym);
     }
 
-
+    @Transactional(readOnly = true)
     public List<GymDto> getAllGymsAsDto() {
-        List<Gym> gyms = gymRepository.findAll();
+        return gymRepository.findAll()
+                .stream()
+                .map(this::toDto)
+                .toList();
+    }
 
-        return gyms.stream().map(gym -> {
-            GymDto dto = new GymDto();
-            dto.setId(gym.getId());
-            dto.setName(gym.getName());
-            dto.setLocation(gym.getLocation());
-            dto.setDescription(gym.getDescription());
-            dto.setCreatedBy(gym.getCreatedBy());
-            dto.setCreatedAt(gym.getCreatedAt());
-            dto.setLastUpdated(gym.getLastUpdated());
-
-            List<SpraywallDto> sprayDtos = gym.getSpraywalls().stream().map(s -> {
-                SpraywallDto sDto = new SpraywallDto();
-                sDto.setName(s.getName());
-                sDto.setDescription(s.getDescription());
-                sDto.setPhotoUrl(s.getPhotoUrl());
-                sDto.setPublicVisible(s.isPublic());
-                sDto.setGymId(gym.getId());
-                return sDto;
-            }).toList();
-
-            dto.setSpraywalls(sprayDtos);
-
-            return dto;
-        }).toList();
+    @Transactional(readOnly = true)
+    public List<GymDto> getAllVisibleGyms(UUID userId) {
+        return gymRepository.findByIsPublicTrueOrCreatedBy(userId)
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
 
 
+    private GymDto toDto(Gym gym) {
+        if (gym == null) return null;
+
+        GymDto dto = new GymDto();
+        dto.setId(gym.getId());
+        dto.setName(gym.getName());
+        dto.setLocation(gym.getLocation());
+        dto.setDescription(gym.getDescription());
+        dto.setCreatedBy(gym.getCreatedBy());
+        dto.setCreatedAt(gym.getCreatedAt());
+        dto.setLastUpdated(gym.getLastUpdated());
+        dto.setPublicVisible(gym.isPublic());
+
+        // Spraywalls null-sicher mappen
+        List<SpraywallDto> sprayDtos = gym.getSpraywalls() == null ? List.of()
+                : gym.getSpraywalls().stream()
+                .filter(Objects::nonNull)
+                .map(s -> toDto(s, gym.getId()))
+                .toList();
+
+        dto.setSpraywalls(sprayDtos);
+        return dto;
+    }
+
+    private SpraywallDto toDto(Spraywall s, UUID gymId) {
+        SpraywallDto d = new SpraywallDto();
+
+        d.setId(s.getId());
+        d.setName(s.getName());
+        d.setDescription(s.getDescription());
+        d.setPhotoUrl(s.getPhotoUrl());
+        d.setPublicVisible(s.isPublic());
+        d.setGymId(gymId);
+        return d;
+    }
 }
