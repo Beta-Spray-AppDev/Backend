@@ -53,7 +53,7 @@ public class BoulderTickService {
     @Transactional(readOnly = true)
     public List<BoulderDto> getMyTickedBoulders(String authHeader) {
         UUID userId = authService.extractUserId(authHeader);
-        return tickRepo.findByUserId(userId).stream()
+        return tickRepo.findByUserIdAndBoulderIsNotNull(userId).stream()
                 .map(BoulderTick::getBoulder)
                 .map(boulderService::toDto)
                 .toList();
