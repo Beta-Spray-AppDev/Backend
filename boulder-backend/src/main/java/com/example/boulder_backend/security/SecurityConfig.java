@@ -35,6 +35,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll() //Login & Registrierung öffentlich
+                        .requestMatchers("/api/feedback", "/api/feedback/**").permitAll()
                         .anyRequest().authenticated() // alles andere mit JWT
                 )
                 .csrf(AbstractHttpConfigurer::disable) //deaktiviert CSRF-Schutz

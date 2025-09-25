@@ -13,14 +13,14 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update         # erstellt Tabellen automatisch
-    show-sql: true             # zeigt SQL-Befehle in der Konsole
-
+      ddl-auto: update
+    show-sql: true
   security:
     oauth2:
       resourceserver:
         jwt:
           secret-key: ${jwt.secret}
 
-
-
+app:
+  notifications:
+    webhook: "https://discord.com/api/webhooks/1420541593701716112/5xhzG5nzbOQu23iEQTcdiUNl4YtzJLRUaKKP-SSFpmPwtz8sNmL3rerHsD2qBRVVIy0t"
