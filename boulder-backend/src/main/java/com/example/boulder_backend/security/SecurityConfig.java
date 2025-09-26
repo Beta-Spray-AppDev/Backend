@@ -1,7 +1,9 @@
 package com.example.boulder_backend.security;
 
+import org.springframework.boot.autoconfigure.security.reactive.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -34,8 +36,16 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
+
+
+                        .requestMatchers(String.valueOf(PathRequest.toStaticResources().atCommonLocations())).permitAll()
+
+
+                        .requestMatchers(HttpMethod.GET, "/latest.json").permitAll()
                         .requestMatchers("/auth/**").permitAll() //Login & Registrierung öffentlich
                         .requestMatchers("/api/feedback", "/api/feedback/**").permitAll()
+
+
                         .anyRequest().authenticated() // alles andere mit JWT
                 )
                 .csrf(AbstractHttpConfigurer::disable) //deaktiviert CSRF-Schutz
