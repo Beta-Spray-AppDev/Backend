@@ -8,7 +8,7 @@ import org.hibernate.annotations.GenericGenerator;
 import java.util.UUID;
 
 @Entity
-@Data
+@Data  // generiert getter, setter, equals() usw
 @Table(name = "app_user")
 public class UserEntity {
 

@@ -33,12 +33,12 @@ public class AuthService {
 
     private final UserRepository userRepository; //Zugriff auf UserDb
 
-    @Value("${jwt.secret}")
+    @Value("${jwt.secret}") // liest Wert aus application properties
     private String jwtSecret;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
-    }
+    } // baut aus Secret einen HMAC-Key für HS256
 
     public UserEntity register(RegisterDto request) {
 

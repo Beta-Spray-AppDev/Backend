@@ -18,4 +18,7 @@ public interface BoulderTickRepository extends JpaRepository<BoulderTick, UUID> 
 
     // Liefert alle Ticks für einen Boulder
     List<BoulderTick> findByBoulderId(UUID boulderId);
+
+
+    void deleteByBoulderIdAndUserId(UUID boulderId, UUID userId);
 }

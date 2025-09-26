@@ -60,6 +60,13 @@ public class BoulderTickService {
     }
 
 
+    @Transactional
+    public void untick(UUID boulderId, String authHeader) {
+        UUID userId = authService.extractUserId(authHeader);
+        tickRepo.deleteByBoulderIdAndUserId(boulderId, userId);
+    }
+
+
 
 
     private TickDto toDto(BoulderTick t) {

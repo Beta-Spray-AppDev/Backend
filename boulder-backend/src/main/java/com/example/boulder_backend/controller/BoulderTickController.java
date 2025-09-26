@@ -32,4 +32,13 @@ public class BoulderTickController {
     }
 
 
+    // Untick einzelner Boulder
+    @DeleteMapping("/{boulderId}/ticks")
+    public ResponseEntity<Void> untick(@PathVariable UUID boulderId,
+                                       @RequestHeader("Authorization") String authHeader) {
+        boulderTickService.untick(boulderId, authHeader);
+        return ResponseEntity.noContent().build(); // 204
+    }
+
+
 }
