@@ -102,7 +102,7 @@ public class SpraywallService {
         dto.setPublicVisible(spraywall.isPublic());
         dto.setGymId(spraywall.getGym().getId());
 
-        if (spraywall.getCreatedBy() != null) {               //  null-sicher für alte einträge
+        if (spraywall.getCreatedBy() != null) {               
             dto.setCreatedBy(spraywall.getCreatedBy().getId());
         } else {
             dto.setCreatedBy(null);

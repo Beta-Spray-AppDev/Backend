@@ -50,6 +50,7 @@ public class AuthService {
 
 
     private final UserRepository userRepository; //Zugriff auf UserDb
+    private final NotifyService notifyService;
 
     @Value("${jwt.secret}") // liest Wert aus application properties
     private String jwtSecret;
@@ -85,13 +86,12 @@ public class AuthService {
 
 
         try {
-            //user in db schreiben
-            return userRepository.save(user);
-        }
-
-        // Falls zwischen Check in Controller und Save jemand denselben username/email registriert
-        catch (DataIntegrityViolationException ex){
-            throw ex;
+            UserEntity saved = userRepository.save(user);
+            // 🔔 async Notify (Discord/Webhook)
+            notifyService.onNewUser(saved);
+            return saved;
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            throw ex; // oder in eine 409-Exception mappen
         }
 
     }
