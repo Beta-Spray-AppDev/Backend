@@ -21,7 +21,6 @@ public class Spraywall {
 
     private long createdAt;
     private long lastUpdated;
-
     @ManyToOne
     @JoinColumn(name = "gym_id")
     private Gym gym;
@@ -29,5 +28,18 @@ public class Spraywall {
     @ManyToOne
     @JoinColumn(name = "created_by_id", nullable = false)
     private UserEntity createdBy;
+    private boolean isArchived = false;
+
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = System.currentTimeMillis();
+        this.lastUpdated = this.createdAt;
+    }
+    @PreUpdate
+    public void preUpdate() {
+        this.lastUpdated = System.currentTimeMillis();
+    }
+
 
 }
