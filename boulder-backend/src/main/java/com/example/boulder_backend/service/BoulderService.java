@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.oauth2.jwt.Jwt;
+
 
 import java.util.List;
 import java.util.UUID;
@@ -25,12 +27,9 @@ public class BoulderService {
     private final BoulderRepository boulderRepository;
     private final SpraywallRepository spraywallRepository;
     private final UserRepository userRepository;
-    private final AuthService authService;
 
     //CREATE
-    public BoulderDto createBoulder(BoulderDto dto, String authHeader){
-
-        UUID userId = authService.extractUserId(authHeader);
+    public BoulderDto createBoulder(BoulderDto dto, UUID userId){
 
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -63,8 +62,7 @@ public class BoulderService {
         return dto;
     }
     // READ: meine Boulder
-    public List<BoulderDto> getMyBoulders(String authHeader) {
-        UUID userId = authService.extractUserId(authHeader); //
+    public List<BoulderDto> getMyBoulders(UUID userId) {
 
         return boulderRepository.findByCreatedById(userId)
                 .stream()
@@ -121,8 +119,7 @@ public class BoulderService {
 
     //UPADTE: Replace
     @Transactional
-    public BoulderDto updateBoulder(UUID boulderId, BoulderDto dto, String authHeader) {
-        UUID userId = authService.extractUserId(authHeader);
+    public BoulderDto updateBoulder(UUID boulderId, BoulderDto dto, UUID userId) {
 
         Boulder boulder = boulderRepository.findById(boulderId)
                 .orElseThrow(() -> new RuntimeException("Boulder nicht gefunden"));
@@ -150,8 +147,7 @@ public class BoulderService {
     }
 
     @Transactional
-    public void deleteBoulder(UUID boulderId, String authHeader) {
-        UUID userId = authService.extractUserId(authHeader);
+    public void deleteBoulder(UUID boulderId, UUID userId) {
 
         Boulder boulder = boulderRepository.findById(boulderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Boulder nicht gefunden"));

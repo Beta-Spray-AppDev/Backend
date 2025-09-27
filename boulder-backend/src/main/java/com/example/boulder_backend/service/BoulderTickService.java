@@ -24,9 +24,7 @@ public class BoulderTickService {
 
 
     // Methode zum Setzen eines Ticks
-    public TickDto tick(UUID boulderId, String authHeader) {
-
-        UUID userId = authService.extractUserId(authHeader);
+    public TickDto tick(UUID boulderId, UUID userId) {
 
         // Falls Tick bereits existiert
         if (tickRepo.existsByBoulderIdAndUserId(boulderId, userId)) {
@@ -51,8 +49,7 @@ public class BoulderTickService {
     }
 
     @Transactional(readOnly = true)
-    public List<BoulderDto> getMyTickedBoulders(String authHeader) {
-        UUID userId = authService.extractUserId(authHeader);
+    public List<BoulderDto> getMyTickedBoulders(UUID userId) {
         return tickRepo.findByUserIdAndBoulderIsNotNull(userId).stream()
                 .map(BoulderTick::getBoulder)
                 .map(boulderService::toDto)
@@ -61,8 +58,7 @@ public class BoulderTickService {
 
 
     @Transactional
-    public void untick(UUID boulderId, String authHeader) {
-        UUID userId = authService.extractUserId(authHeader);
+    public void untick(UUID boulderId, UUID userId) {
         tickRepo.deleteByBoulderIdAndUserId(boulderId, userId);
     }
 

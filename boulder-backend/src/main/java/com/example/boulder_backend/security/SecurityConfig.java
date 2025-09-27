@@ -34,7 +34,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll() //Login & Registrierung öffentlich
+                        .requestMatchers("/auth/register", "/auth/login", "/auth/refresh", "/auth/logout").permitAll() //Login & Registrierung öffentlich
                         .anyRequest().authenticated() // alles andere mit JWT
                 )
                 .csrf(AbstractHttpConfigurer::disable) //deaktiviert CSRF-Schutz

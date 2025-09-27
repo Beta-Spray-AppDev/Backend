@@ -51,19 +51,36 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody LoginDto request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginDto request, @RequestHeader(value="X-Device-Id", required=false) String deviceId) {
         // AuthService prüft, ob Login gültig ist
-        String token = authService.login(request.getUsername().trim(), request.getPassword());
 
-        if (token != null) {
-            return ResponseEntity.ok(token);
-        } else {
-            return ResponseEntity.status(401).body("invalid_credentials");
-        }
+        var tokens = authService.loginAndIssueTokens(request.getUsername().trim(), request.getPassword(), deviceId);
+
+        if (tokens != null) return ResponseEntity.ok(tokens);
+        return ResponseEntity.status(401).body("invalid_credentials");
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody com.example.boulder_backend.dto.RefreshRequest req,
+                                     @RequestHeader(value="X-Device-Id", required=false) String deviceId) {
+        if (req == null || req.getRefreshToken() == null) return ResponseEntity.badRequest().body("missing_refresh_token");
+        var tokens = authService.refreshTokens(req.getRefreshToken(), deviceId);
+        if (tokens == null) return ResponseEntity.status(401).body("invalid_refresh");
+        return ResponseEntity.ok(tokens);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestBody com.example.boulder_backend.dto.LogoutRequest req) {
+        if (req == null || req.getRefreshToken() == null) return ResponseEntity.badRequest().body("missing_refresh_token");
+        authService.revokeRefresh(req.getRefreshToken());
+        return ResponseEntity.noContent().build();
+    }
+
+
 
     @GetMapping("/profile")
     public ResponseEntity<UserEntity> getProfile(@AuthenticationPrincipal Jwt principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
         // Holt userid aus token bei .claim
         UUID userId = UUID.fromString(principal.getClaimAsString("userId"));
         // Sucht in db nach dem user
@@ -80,6 +97,7 @@ public class AuthController {
             @AuthenticationPrincipal Jwt principal,
             @RequestBody UpdateProfileDto dto //neue Daten vom Client
     ) {
+        if (principal == null) return ResponseEntity.status(401).build();
 
         // Holt UserID aus Token
         UUID userId = UUID.fromString(principal.getClaimAsString("userId"));

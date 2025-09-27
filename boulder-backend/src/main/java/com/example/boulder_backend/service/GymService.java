@@ -21,7 +21,7 @@ public class GymService {
         this.gymRepository = gymRepository;
     }
 
-    public Gym createGym(GymDto dto) {
+    public Gym createGym(GymDto dto, UUID userId) {
         Gym gym = new Gym();
         gym.setId(UUID.randomUUID());
         gym.setName(dto.getName());
@@ -29,7 +29,7 @@ public class GymService {
         gym.setDescription(dto.getDescription());
         gym.setCreatedAt(System.currentTimeMillis());
         gym.setLastUpdated(System.currentTimeMillis());
-        gym.setCreatedBy(dto.getCreatedBy());
+        gym.setCreatedBy(userId);
         gym.setPublic(dto.isPublicVisible());
 
         return gymRepository.save(gym);

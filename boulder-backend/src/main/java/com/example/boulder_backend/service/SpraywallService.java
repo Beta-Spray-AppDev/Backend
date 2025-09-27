@@ -31,8 +31,6 @@ public class SpraywallService {
         Gym gym = gymRepository.findById(dto.getGymId())
                 .orElseThrow(() -> new RuntimeException("Gym not found"));
 
-        UserEntity user = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Spraywall spraywall = new Spraywall();
         spraywall.setId(UUID.randomUUID());
@@ -43,6 +41,10 @@ public class SpraywallService {
         spraywall.setCreatedAt(System.currentTimeMillis());
         spraywall.setLastUpdated(System.currentTimeMillis());
         spraywall.setGym(gym);
+
+
+        UserEntity user = new UserEntity();
+        user.setId(currentUserId);
         spraywall.setCreatedBy(user);
 
         return spraywallRepository.save(spraywall);

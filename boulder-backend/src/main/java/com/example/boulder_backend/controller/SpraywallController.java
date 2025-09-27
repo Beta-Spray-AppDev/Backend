@@ -4,10 +4,11 @@ import com.example.boulder_backend.dto.SpraywallDto;
 import com.example.boulder_backend.model.Spraywall;
 import com.example.boulder_backend.service.AuthService;
 import com.example.boulder_backend.service.SpraywallService;
-import io.jsonwebtoken.Jwt;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.oauth2.jwt.Jwt;
+
 
 
 
@@ -33,10 +34,9 @@ public class SpraywallController {
      */
     @PostMapping
     public ResponseEntity<SpraywallDto> createSpraywall(
-            @RequestBody SpraywallDto dto,
-            @RequestHeader("Authorization") String authHeader) {
+            @RequestBody SpraywallDto dto, @AuthenticationPrincipal Jwt jwt) {
 
-        UUID currentUserId = authService.extractUserId(authHeader);
+        UUID currentUserId = UUID.fromString(jwt.getClaim("userId").toString());
         Spraywall saved = spraywallService.createSpraywall(dto, currentUserId);
         return ResponseEntity.ok(spraywallService.toDto(saved));
     }
@@ -51,9 +51,9 @@ public class SpraywallController {
      */
     @GetMapping
     public ResponseEntity<List<SpraywallDto>> getAll(
-            @RequestHeader("Authorization") String authHeader) {
+            @AuthenticationPrincipal Jwt jwt) {
 
-        UUID userId = authService.extractUserId(authHeader);
+        UUID userId = UUID.fromString(jwt.getClaim("userId").toString());
         List<SpraywallDto> list = spraywallService.getAllVisible(userId);
         return ResponseEntity.ok(list);
     }
@@ -61,9 +61,9 @@ public class SpraywallController {
     @GetMapping("/gym/{gymId}")
     public ResponseEntity<List<SpraywallDto>> getSpraywallsByGym(
             @PathVariable UUID gymId,
-            @RequestHeader("Authorization") String authHeader) {
+            @AuthenticationPrincipal Jwt jwt) {
 
-        UUID userId = authService.extractUserId(authHeader);
+        UUID userId = UUID.fromString(jwt.getClaim("userId").toString());
         List<SpraywallDto> spraywalls = spraywallService.getAllVisibleByGym(gymId, userId);
         return ResponseEntity.ok(spraywalls);
     }
@@ -73,9 +73,9 @@ public class SpraywallController {
     @GetMapping("/{id}")
     public ResponseEntity<SpraywallDto> getSpraywallById(
             @PathVariable UUID id,
-            @RequestHeader("Authorization") String authHeader) {
+            @AuthenticationPrincipal Jwt jwt) {
 
-        UUID userId = authService.extractUserId(authHeader);
+        UUID userId = UUID.fromString(jwt.getClaim("userId").toString());
         SpraywallDto dto = spraywallService.getVisibleById(id, userId);
         if (dto == null) {
             return ResponseEntity.notFound().build();

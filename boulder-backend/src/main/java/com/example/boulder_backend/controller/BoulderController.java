@@ -16,7 +16,10 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.oauth2.jwt.Jwt;
+
 
 import java.util.List;
 import java.util.UUID;
@@ -39,18 +42,20 @@ public class BoulderController {
     @PostMapping
     public ResponseEntity<BoulderDto> createBoulder(
             @RequestBody BoulderDto dto,
-            @RequestHeader("Authorization") String authHeader
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        BoulderDto created = boulderService.createBoulder(dto, authHeader); // <- jetzt DTO zurück
+        UUID userId = UUID.fromString(jwt.getClaim("userId").toString());
+        BoulderDto created = boulderService.createBoulder(dto, userId); // <- jetzt DTO zurück
         return ResponseEntity.ok(created);
     }
 
     // Holt sich alle Boulder vom eingeloggten User
     @GetMapping("/mine")
     public ResponseEntity<List<BoulderDto>> getMyBoulders(
-            @RequestHeader("Authorization") String authHeader
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        List<BoulderDto> boulders = boulderService.getMyBoulders(authHeader);
+        UUID userId = UUID.fromString(jwt.getClaim("userId").toString());
+        List<BoulderDto> boulders = boulderService.getMyBoulders(userId);
         return ResponseEntity.ok(boulders);
     }
 
@@ -68,16 +73,20 @@ public class BoulderController {
     @PutMapping("/{boulderId}")
     public ResponseEntity<BoulderDto> updateBoulder(@PathVariable UUID boulderId,
                                                     @RequestBody BoulderDto dto,
-                                                    @RequestHeader("Authorization") String authHeader) {
-        return ResponseEntity.ok(boulderService.updateBoulder(boulderId, dto, authHeader));
+                                                    @AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getClaim("userId").toString());
+
+        return ResponseEntity.ok(boulderService.updateBoulder(boulderId, dto, userId));
     }
 
     @DeleteMapping("/{boulderId}")
     public ResponseEntity<Void> deleteBoulder(
             @PathVariable UUID boulderId,
-            @RequestHeader("Authorization") String authHeader
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        boulderService.deleteBoulder(boulderId, authHeader);
+        UUID userId = UUID.fromString(jwt.getClaim("userId").toString());
+
+        boulderService.deleteBoulder(boulderId, userId);
         return ResponseEntity.noContent().build(); // 204
     }
 
