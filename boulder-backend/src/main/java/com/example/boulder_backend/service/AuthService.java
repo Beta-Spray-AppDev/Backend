@@ -58,6 +58,8 @@ public class AuthService {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     } // baut aus Secret einen HMAC-Key für HS256
 
+
+    // -------------------- USER REGISTRIEREN --------------------
     public UserEntity register(RegisterDto request) {
 
         //neues UserEntity-Objekt erstellen
@@ -94,6 +96,8 @@ public class AuthService {
 
     }
 
+
+    // -------------------- LOGIN & TOKEN-AUSGABE --------------------
     public TokenResponse  loginAndIssueTokens(String username, String password, String deviceId) {
 
         if (username == null || username.isBlank() || password == null || password.isBlank()) {
@@ -110,17 +114,26 @@ public class AuthService {
 
         // Passwort prüfen
         if (!BCrypt.checkpw(password, user.getPasswordHash())) return null;
+
+        // Wenn alles passt, Access + Refresh Token ausstellen
         return issueTokens(user, deviceId);
 
     }
 
+
+    // -------------------- REFRESH TOKEN FLOW --------------------
     public TokenResponse refreshTokens(String refreshTokenRaw, String deviceId) {
+
+        // Refresh Token hashen und in der DB nachsehen
         String h = sha256(refreshTokenRaw);
         var rtOpt = refreshTokenRepository.findByTokenHash(h);
         if (rtOpt.isEmpty()) return null;
         var rt = rtOpt.get();
+
+        // Abbrechen, wenn Token ungültig, abgelaufen oder schon widerrufen
         if (rt.isRevoked()) return null;
         if (rt.getExpiresAt().isBefore(java.time.Instant.now())) return null;
+
         // (optional) deviceId prüfen, wenn gesetzt:
         if (rt.getDeviceId() != null && deviceId != null && !rt.getDeviceId().equals(deviceId)) {
             return null;
@@ -133,6 +146,8 @@ public class AuthService {
         return issueTokens(user, deviceId);
     }
 
+
+    // -------------------- HASH-FUNKTION FÜR REFRESH TOKENS --------------------
     private String sha256(String raw) {
         try {
             var md = java.security.MessageDigest.getInstance("SHA-256");
@@ -142,6 +157,9 @@ public class AuthService {
             return sb.toString();
         } catch (Exception e) { throw new RuntimeException(e); }
     }
+
+
+    // -------------------- REFRESH TOKEN MANUELL WIDERRUFEN --------------------
 
     public void revokeRefresh(String refreshTokenRaw) {
         String h = sha256(refreshTokenRaw);
@@ -153,7 +171,7 @@ public class AuthService {
 
 
 
-
+    // -------------------- JWT ACCESS TOKEN ERZEUGEN --------------------
     private String generateAccessToken(UserEntity user) {
         return Jwts.builder()
                 .setSubject(user.getUsername())
@@ -164,22 +182,29 @@ public class AuthService {
                 .compact();
     }
 
+
+    // -------------------- ZUFÄLLIGES OPAQUES TOKEN GENERIEREN --------------------
     private String newOpaqueToken() {
+        // Zwei UUIDs verbinden für ausreichend Entropie
         return UUID.randomUUID().toString() + "." + UUID.randomUUID(); // ausreichend random
     }
 
+
+    // -------------------- REFRESH TOKEN ERZEUGEN UND SPEICHERN --------------------
     private String issueRefreshToken(UserEntity user, String deviceId) {
-        String raw = newOpaqueToken();
+        String raw = newOpaqueToken(); // Klartext-Token
         RefreshToken rt = new RefreshToken();
         rt.setUser(user);
         rt.setIssuedAt(java.time.Instant.now());
         rt.setExpiresAt(java.time.Instant.ofEpochMilli(System.currentTimeMillis() + REFRESH_TTL_MS));
-        rt.setTokenHash(sha256(raw));
+        rt.setTokenHash(sha256(raw)); // Nur der Hash wird gespeichert
         rt.setDeviceId(deviceId);
         refreshTokenRepository.save(rt);
         return raw; // nur Klartext an Client
     }
 
+
+    // -------------------- KOMBI: ACCESS + REFRESH TOKEN AUSSTELLEN --------------------
     public TokenResponse issueTokens(UserEntity user, String deviceId) {
         String access = generateAccessToken(user);
         String refresh = issueRefreshToken(user, deviceId);
@@ -190,8 +215,11 @@ public class AuthService {
     }
 
 
+    // -------------------- USER-ID AUS EINEM JWT EXTRAHIEREN --------------------
     public UUID extractUserId(String authHeader) {
         String token = authHeader.replace("Bearer ", "");
+        
+        // Token verifizieren und Claims auslesen
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
