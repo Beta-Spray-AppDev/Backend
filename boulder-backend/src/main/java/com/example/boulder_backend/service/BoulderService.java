@@ -18,6 +18,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -27,6 +29,7 @@ public class BoulderService {
     private final BoulderRepository boulderRepository;
     private final SpraywallRepository spraywallRepository;
     private final UserRepository userRepository;
+    private final SuperuserRegistry superusers;
 
     //CREATE
     public BoulderDto createBoulder(BoulderDto dto, UUID userId){
@@ -122,17 +125,27 @@ public class BoulderService {
     public BoulderDto updateBoulder(UUID boulderId, BoulderDto dto, UUID userId) {
 
         Boulder boulder = boulderRepository.findById(boulderId)
-                .orElseThrow(() -> new RuntimeException("Boulder nicht gefunden"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Boulder nicht gefunden"));
 
-        // Optional: Ownership check
-        if (!boulder.getCreatedBy().getId().equals(userId)) {
-            throw new RuntimeException("Keine Berechtigung zum Bearbeiten dieses Boulders");
+        UUID ownerId = Optional.ofNullable(boulder.getCreatedBy())
+                .map(UserEntity::getId)
+                .orElse(null);
+
+
+        // Owner ODER Superuser
+        boolean allowed = Objects.equals(ownerId, userId) || superusers.isSuperuser(userId);
+        if (!allowed) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Nur der Ersteller oder ein Superuser darf diesen Boulder bearbeiten."
+            );
         }
 
         // Spraywall setzen (falls änderbar)
         Spraywall spraywall = spraywallRepository.findById(dto.getSpraywallId())
-                .orElseThrow(() -> new RuntimeException("Spraywall nicht gefunden"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Spraywall nicht gefunden"));
 
+        // Felder aktualisieren
         boulder.setName(dto.getName());
         boulder.setDifficulty(dto.getDifficulty());
         boulder.setSpraywall(spraywall);
@@ -146,13 +159,21 @@ public class BoulderService {
         return toDto(saved);
     }
 
+
     @Transactional
     public void deleteBoulder(UUID boulderId, UUID userId) {
 
         Boulder boulder = boulderRepository.findById(boulderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Boulder nicht gefunden"));
 
-        if (boulder.getCreatedBy() == null || !boulder.getCreatedBy().getId().equals(userId)) {
+        // Owner ODER Superuser darf löschen
+        boolean isOwner = Optional.ofNullable(boulder.getCreatedBy())
+                .map(u -> u.getId())
+                .map(userId::equals)
+                .orElse(false);
+
+        boolean allowed = isOwner || superusers.isSuperuser(userId);
+        if (!allowed) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Keine Berechtigung");
         }
 
