@@ -23,6 +23,10 @@ public class BoulderDto {
     private String gymName;
 
 
+    private Double avgStars;   // null, wenn keine Votes
+    private Integer starsCount;
+
+
 
 
 }

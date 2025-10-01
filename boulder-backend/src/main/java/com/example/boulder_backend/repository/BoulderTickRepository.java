@@ -1,5 +1,6 @@
 package com.example.boulder_backend.repository;
 
+import com.example.boulder_backend.dto.projection.BoulderRatingAggregate;
 import com.example.boulder_backend.model.BoulderTick;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -35,4 +36,30 @@ public interface BoulderTickRepository extends JpaRepository<BoulderTick, UUID> 
     where t.user.id = :userId and t.boulder is not null
 """)
     List<BoulderTick> findByUserIdWithBoulder(UUID userId);
+
+
+
+    @Query("""
+    select t.boulder.id as boulderId,
+           avg(t.stars)     as avgStars,
+           count(t.stars)   as count
+    from BoulderTick t
+    where t.stars is not null
+    group by t.boulder.id
+""")
+    List<BoulderRatingAggregate> findAllBoulderRatings();
+
+
+
+    @Query("""
+    select t.boulder.id as boulderId,
+           avg(t.stars)     as avgStars,
+           count(t.stars)   as count
+    from BoulderTick t
+    where t.stars is not null
+      and t.boulder.spraywall.id = :spraywallId
+    group by t.boulder.id
+""")
+    List<BoulderRatingAggregate> findRatingsBySpraywall(UUID spraywallId);
+
 }
