@@ -20,4 +20,8 @@ public class BoulderTick {
     @JoinColumn(name="user_id")    private UserEntity user;
 
     private long createdAt;
+
+    private Integer stars;              // 1..5, optional
+    @Column(name="proposed_grade", length = 16)
+    private String proposedGrade;
 }

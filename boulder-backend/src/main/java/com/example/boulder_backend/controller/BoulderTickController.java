@@ -2,6 +2,7 @@ package com.example.boulder_backend.controller;
 
 
 import com.example.boulder_backend.dto.BoulderDto;
+import com.example.boulder_backend.dto.TickCreateRequest;
 import com.example.boulder_backend.dto.TickDto;
 import com.example.boulder_backend.service.BoulderService;
 import com.example.boulder_backend.service.BoulderTickService;
@@ -24,9 +25,9 @@ public class BoulderTickController {
 
     //Endpoint um Boulder zu ticken
     @PostMapping("/{boulderId}/ticks")
-    public ResponseEntity<TickDto> tick(@PathVariable UUID boulderId, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<TickDto> tick(@PathVariable UUID boulderId, @AuthenticationPrincipal Jwt jwt, @RequestBody(required = false) TickCreateRequest body) {
         UUID userId = UUID.fromString(jwt.getClaim("userId").toString());
-        return ResponseEntity.ok(boulderTickService.tick(boulderId, userId));
+        return ResponseEntity.ok(boulderTickService.tick(boulderId, userId, body));
     }
 
     // holt sich alle ticks des users
