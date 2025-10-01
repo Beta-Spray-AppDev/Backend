@@ -29,4 +29,7 @@ public class Boulder {
 
     @OneToMany(mappedBy = "boulder", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Hold> holds;
+
+    @Column(name = "setter_note")
+    private String setterNote;
 }
