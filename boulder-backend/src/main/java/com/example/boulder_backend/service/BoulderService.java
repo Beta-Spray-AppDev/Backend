@@ -31,8 +31,8 @@ public class BoulderService {
     private final UserRepository userRepository;
     private final SuperuserRegistry superusers;
 
-    //CREATE
-    public BoulderDto createBoulder(BoulderDto dto, UUID userId){
+    // CREATE
+    public BoulderDto createBoulder(BoulderDto dto, UUID userId) {
 
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -48,6 +48,7 @@ public class BoulderService {
         boulder.setLastUpdated(System.currentTimeMillis());
         boulder.setCreatedBy(user);
         boulder.setSpraywall(spraywall);
+        boulder.setSetterNote(dto.getSetterNote()); // <- Note übernehmen
 
         List<Hold> holds = dto.getHolds().stream().map(holdDto -> {
             Hold hold = new Hold();
@@ -60,21 +61,20 @@ public class BoulderService {
         }).toList();
 
         boulder.setHolds(holds);
-        boulderRepository.save(boulder);
 
-        return dto;
+        Boulder saved = boulderRepository.save(boulder);
+        return toDto(saved); // <- wichtig: das gespeicherte Objekt mappen & zurückgeben
     }
+
     // READ: meine Boulder
     public List<BoulderDto> getMyBoulders(UUID userId) {
-
         return boulderRepository.findByCreatedById(userId)
                 .stream()
                 .map(this::toDto)
                 .toList();
     }
 
-
-    //Mapper: Entity -> DTO
+    // Mapper: Entity -> DTO
     public BoulderDto toDto(Boulder boulder) {
         BoulderDto dto = new BoulderDto();
         dto.setId(boulder.getId());
@@ -90,6 +90,7 @@ public class BoulderService {
         dto.setSpraywallName(boulder.getSpraywall().getName());
         dto.setGymName(boulder.getSpraywall().getGym().getName());
 
+        dto.setSetterNote(boulder.getSetterNote()); // <- FIX: DTO aus Entity befüllen (nicht umgekehrt!)
 
         dto.setHolds(
                 boulder.getHolds().stream().map(hold -> {
@@ -107,20 +108,20 @@ public class BoulderService {
 
     // READ: by spraywall
     public List<BoulderDto> getBouldersBySpraywall(UUID spraywallId) {
-        List<Boulder> boulders = boulderRepository.findBySpraywallId(spraywallId);
-
-        return boulders.stream()
+        return boulderRepository.findBySpraywallId(spraywallId)
+                .stream()
                 .map(this::toDto)
                 .toList();
     }
-    //READ: einzelner Boulder
+
+    // READ: einzelner Boulder
     public BoulderDto getBoulderById(UUID boulderId) {
         Boulder boulder = boulderRepository.findById(boulderId)
                 .orElseThrow(() -> new RuntimeException("Boulder nicht gefunden"));
         return toDto(boulder);
     }
 
-    //UPADTE: Replace
+    // UPDATE
     @Transactional
     public BoulderDto updateBoulder(UUID boulderId, BoulderDto dto, UUID userId) {
 
@@ -131,8 +132,6 @@ public class BoulderService {
                 .map(UserEntity::getId)
                 .orElse(null);
 
-
-        // Owner ODER Superuser
         boolean allowed = Objects.equals(ownerId, userId) || superusers.isSuperuser(userId);
         if (!allowed) {
             throw new ResponseStatusException(
@@ -141,17 +140,15 @@ public class BoulderService {
             );
         }
 
-        // Spraywall setzen (falls änderbar)
         Spraywall spraywall = spraywallRepository.findById(dto.getSpraywallId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Spraywall nicht gefunden"));
 
-        // Felder aktualisieren
         boulder.setName(dto.getName());
         boulder.setDifficulty(dto.getDifficulty());
         boulder.setSpraywall(spraywall);
         boulder.setLastUpdated(System.currentTimeMillis());
+        boulder.setSetterNote(dto.getSetterNote()); // <- Note aktualisieren
 
-        // Holds ersetzen (einfach & robust)
         boulder.getHolds().clear();
         boulder.getHolds().addAll(dtoToHolds(dto, boulder));
 
@@ -159,28 +156,22 @@ public class BoulderService {
         return toDto(saved);
     }
 
-
     @Transactional
     public void deleteBoulder(UUID boulderId, UUID userId) {
-
         Boulder boulder = boulderRepository.findById(boulderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Boulder nicht gefunden"));
 
-        // Owner ODER Superuser darf löschen
         boolean isOwner = Optional.ofNullable(boulder.getCreatedBy())
-                .map(u -> u.getId())
+                .map(UserEntity::getId)
                 .map(userId::equals)
                 .orElse(false);
 
         boolean allowed = isOwner || superusers.isSuperuser(userId);
-        if (!allowed) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Keine Berechtigung");
-        }
+        if (!allowed) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Keine Berechtigung");
 
         try {
-            boulderRepository.delete(boulder); // löscht Holds; Ticks bleiben, boulder_id -> NULL
+            boulderRepository.delete(boulder);
         } catch (org.springframework.dao.DataIntegrityViolationException ex) {
-            // tritt nur auf, wenn FK nicht nullable/ohne ON DELETE SET NULL ist
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Löschen nicht möglich: Bitte DB-Migration für ON DELETE SET NULL ausführen.",
@@ -189,10 +180,7 @@ public class BoulderService {
         }
     }
 
-
-
-
-    //Mapep: DTO -> Holds
+    // DTO -> Holds
     private List<Hold> dtoToHolds(BoulderDto dto, Boulder owner) {
         return dto.getHolds().stream().map(hd -> {
             Hold h = new Hold();
@@ -204,8 +192,5 @@ public class BoulderService {
             return h;
         }).toList();
     }
-
-
-
-
 }
+

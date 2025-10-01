@@ -21,6 +21,7 @@ public class BoulderDto {
     private String spraywallImageUrl;
     private String spraywallName;
     private String gymName;
+    private String setterNote;
 
 
 
