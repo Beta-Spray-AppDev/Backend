@@ -2,6 +2,7 @@ package com.example.boulder_backend.repository;
 
 import com.example.boulder_backend.model.BoulderTick;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,4 +26,13 @@ public interface BoulderTickRepository extends JpaRepository<BoulderTick, UUID> 
 
 
     void deleteByBoulderIdAndUserId(UUID boulderId, UUID userId);
+
+
+
+    @Query("""
+    select t from BoulderTick t
+    join fetch t.boulder b
+    where t.user.id = :userId and t.boulder is not null
+""")
+    List<BoulderTick> findByUserIdWithBoulder(UUID userId);
 }

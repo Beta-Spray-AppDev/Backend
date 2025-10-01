@@ -4,6 +4,7 @@ package com.example.boulder_backend.controller;
 import com.example.boulder_backend.dto.BoulderDto;
 import com.example.boulder_backend.dto.TickCreateRequest;
 import com.example.boulder_backend.dto.TickDto;
+import com.example.boulder_backend.dto.TickWithBoulderDto;
 import com.example.boulder_backend.service.BoulderService;
 import com.example.boulder_backend.service.BoulderTickService;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,7 @@ public class BoulderTickController {
 
     // holt sich alle ticks des users
     @GetMapping("/ticks/mine")
-    public List<BoulderDto> myTicks(@AuthenticationPrincipal Jwt jwt) {
+    public List<TickWithBoulderDto> myTicks(@AuthenticationPrincipal Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getClaim("userId").toString());
 
         return boulderTickService.getMyTickedBoulders(userId);

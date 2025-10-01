@@ -3,6 +3,7 @@ package com.example.boulder_backend.service;
 import com.example.boulder_backend.dto.BoulderDto;
 import com.example.boulder_backend.dto.TickCreateRequest;
 import com.example.boulder_backend.dto.TickDto;
+import com.example.boulder_backend.dto.TickWithBoulderDto;
 import com.example.boulder_backend.model.Boulder;
 import com.example.boulder_backend.model.BoulderTick;
 import com.example.boulder_backend.model.UserEntity;
@@ -85,10 +86,14 @@ public class BoulderTickService {
 
 
     @Transactional(readOnly = true)
-    public List<BoulderDto> getMyTickedBoulders(UUID userId) {
-        return tickRepo.findByUserIdAndBoulderIsNotNull(userId).stream()
-                .map(BoulderTick::getBoulder)
-                .map(boulderService::toDto)
+    public List<TickWithBoulderDto> getMyTickedBoulders(UUID userId) {
+        return tickRepo.findByUserIdWithBoulder(userId).stream()
+                .map(t -> {
+                    TickWithBoulderDto dto = new TickWithBoulderDto();
+                    dto.setTick(toDto(t));                   // enthält proposedGrade
+                    dto.setBoulder(boulderService.toDto(t.getBoulder()));
+                    return dto;
+                })
                 .toList();
     }
 
