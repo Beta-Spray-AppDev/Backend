@@ -24,6 +24,10 @@ public class BoulderDto {
     private String setterNote;
 
 
+    private Double avgStars;   // null, wenn keine Votes
+    private Integer starsCount;
+
+
 
 
 }

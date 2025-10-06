@@ -7,6 +7,7 @@ import com.example.boulder_backend.model.Hold;
 import com.example.boulder_backend.model.Spraywall;
 import com.example.boulder_backend.model.UserEntity;
 import com.example.boulder_backend.repository.BoulderRepository;
+import com.example.boulder_backend.repository.BoulderTickRepository;
 import com.example.boulder_backend.repository.SpraywallRepository;
 import com.example.boulder_backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -15,12 +16,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.oauth2.jwt.Jwt;
+import com.example.boulder_backend.dto.projection.BoulderRatingAggregate;
+
 
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +34,8 @@ public class BoulderService {
     private final SpraywallRepository spraywallRepository;
     private final UserRepository userRepository;
     private final SuperuserRegistry superusers;
+    private final BoulderTickRepository tickRepo;
+
 
     // CREATE
     public BoulderDto createBoulder(BoulderDto dto, UUID userId) {
@@ -108,10 +114,20 @@ public class BoulderService {
 
     // READ: by spraywall
     public List<BoulderDto> getBouldersBySpraywall(UUID spraywallId) {
-        return boulderRepository.findBySpraywallId(spraywallId)
-                .stream()
-                .map(this::toDto)
-                .toList();
+        var entities = boulderRepository.findBySpraywallId(spraywallId);
+        var dtos = entities.stream().map(this::toDto).toList();
+
+        var ratingMap = tickRepo.findRatingsBySpraywall(spraywallId).stream()
+                .collect(Collectors.toMap(BoulderRatingAggregate::getBoulderId, r -> r));
+
+        for (var dto : dtos) {
+            var agg = ratingMap.get(dto.getId()); // dto.getId() ist bereits UUID in deinem Code
+            if (agg != null) {
+                dto.setAvgStars(agg.getAvgStars());                  // z.B. 3.6
+                dto.setStarsCount(agg.getCount().intValue());        // z.B. 12
+            }
+        }
+        return dtos;
     }
 
     // READ: einzelner Boulder
