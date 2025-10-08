@@ -28,6 +28,11 @@ public class BoulderDto {
     private Integer starsCount;
 
 
+    private Long totalSends;            // Anzahl aller Ticks (Sends)
+    private String avgGradeLabel;       // (gemittelt aus proposedGrade)
+    private Integer gradesCount;
+
+
 
 
 }

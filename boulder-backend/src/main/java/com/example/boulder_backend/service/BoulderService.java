@@ -10,6 +10,7 @@ import com.example.boulder_backend.repository.BoulderRepository;
 import com.example.boulder_backend.repository.BoulderTickRepository;
 import com.example.boulder_backend.repository.SpraywallRepository;
 import com.example.boulder_backend.repository.UserRepository;
+import com.example.boulder_backend.util.FontGradeCodec;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,11 +20,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import com.example.boulder_backend.dto.projection.BoulderRatingAggregate;
 
 
-
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -108,6 +105,27 @@ public class BoulderService {
                     return holdDto;
                 }).toList()
         );
+
+
+        long totalSends = tickRepo.countTicksByBoulder(boulder.getId());
+        List<String> grades = tickRepo.findProposedGradesByBoulder(boulder.getId());
+
+
+        var numbers = grades.stream()
+                .map(FontGradeCodec::toNumber)
+                .filter(Objects::nonNull)
+                .mapToInt(Integer::intValue)
+                .toArray();
+
+
+        if (numbers.length > 0) {
+            double avg = Arrays.stream(numbers).average().orElse(Double.NaN);
+            dto.setAvgGradeLabel(FontGradeCodec.fromNumber(avg));
+            dto.setGradesCount(numbers.length);
+        }
+
+        dto.setTotalSends(totalSends);
+
 
         return dto;
     }

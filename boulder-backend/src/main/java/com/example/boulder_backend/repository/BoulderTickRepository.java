@@ -62,4 +62,20 @@ public interface BoulderTickRepository extends JpaRepository<BoulderTick, UUID> 
 """)
     List<BoulderRatingAggregate> findRatingsBySpraywall(UUID spraywallId);
 
+
+
+
+    @Query("""
+       select count(t) from BoulderTick t
+       where t.boulder.id = :boulderId
+       """)
+    long countTicksByBoulder(UUID boulderId);
+
+
+    @Query("""
+       select t.proposedGrade from BoulderTick t
+       where t.boulder.id = :boulderId and t.proposedGrade is not null
+       """)
+    List<String> findProposedGradesByBoulder(UUID boulderId);
+
 }
