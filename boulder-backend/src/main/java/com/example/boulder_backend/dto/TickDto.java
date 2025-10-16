@@ -13,5 +13,6 @@ public class TickDto {
     private Long createdAt;
     private Integer stars;
     private String proposedGrade;
+    private String boulderNameSnapshot;
 }
 

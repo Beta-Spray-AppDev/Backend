@@ -40,6 +40,18 @@ public class BoulderTickController {
     }
 
 
+
+    // Untick per Tick-ID
+    @DeleteMapping("/ticks/{tickId}")
+    public ResponseEntity<Void> untickByTickId(@PathVariable UUID tickId,
+                                               @AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getClaim("userId").toString());
+        boulderTickService.untickByTickId(tickId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
     // Untick einzelner Boulder
     @DeleteMapping("/{boulderId}/ticks")
     public ResponseEntity<Void> untick(@PathVariable UUID boulderId,

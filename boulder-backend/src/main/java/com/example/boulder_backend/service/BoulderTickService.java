@@ -66,6 +66,9 @@ public class BoulderTickService {
             t.setProposedGrade(trimOrNull(req.getProposedGrade()));
         }
 
+        t.setBoulderNameSnapshot(b.getName());
+
+
 
 
         return toDto(tickRepo.save(t));
@@ -87,11 +90,11 @@ public class BoulderTickService {
 
     @Transactional(readOnly = true)
     public List<TickWithBoulderDto> getMyTickedBoulders(UUID userId) {
-        return tickRepo.findByUserIdWithBoulder(userId).stream()
+        return tickRepo.findByUserIdLeftJoinBoulder(userId).stream()
                 .map(t -> {
                     TickWithBoulderDto dto = new TickWithBoulderDto();
                     dto.setTick(toDto(t));                   // enthält proposedGrade
-                    dto.setBoulder(boulderService.toDto(t.getBoulder()));
+                    dto.setBoulder(t.getBoulder() == null ? null : boulderService.toDto(t.getBoulder()));
                     return dto;
                 })
                 .toList();
@@ -103,17 +106,25 @@ public class BoulderTickService {
         tickRepo.deleteByBoulderIdAndUserId(boulderId, userId);
     }
 
+    @Transactional
+    public void untickByTickId(UUID tickId, UUID userId) {
+        tickRepo.deleteByIdAndUserId(tickId, userId);
+    }
+
+
 
 
 
     private TickDto toDto(BoulderTick t) {
+        Boulder b = t.getBoulder();
         TickDto dto = new TickDto();
         dto.setId(t.getId());
-        dto.setBoulderId(t.getBoulder().getId());
+        dto.setBoulderId(b != null ? b.getId() : null);
         dto.setUserId(t.getUser().getId());
         dto.setCreatedAt(t.getCreatedAt());
         dto.setStars(t.getStars());
         dto.setProposedGrade(t.getProposedGrade());
+        dto.setBoulderNameSnapshot(t.getBoulderNameSnapshot());
         return dto;
     }
 }

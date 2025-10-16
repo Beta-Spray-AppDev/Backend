@@ -24,4 +24,8 @@ public class BoulderTick {
     private Integer stars;              // 1..5, optional
     @Column(name="proposed_grade", length = 16)
     private String proposedGrade;
+
+
+    @Column(name = "boulder_name_snapshot", length = 255)
+    private String boulderNameSnapshot;
 }

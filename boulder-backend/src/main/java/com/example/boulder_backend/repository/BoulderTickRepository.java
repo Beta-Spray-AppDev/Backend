@@ -28,6 +28,8 @@ public interface BoulderTickRepository extends JpaRepository<BoulderTick, UUID> 
 
     void deleteByBoulderIdAndUserId(UUID boulderId, UUID userId);
 
+    void deleteByIdAndUserId(UUID tickId, UUID userId);
+
 
 
     @Query("""
@@ -77,5 +79,15 @@ public interface BoulderTickRepository extends JpaRepository<BoulderTick, UUID> 
        where t.boulder.id = :boulderId and t.proposedGrade is not null
        """)
     List<String> findProposedGradesByBoulder(UUID boulderId);
+
+
+
+
+    @Query("""
+select t from BoulderTick t
+left join fetch t.boulder b
+where t.user.id = :userId
+""")
+    List<BoulderTick> findByUserIdLeftJoinBoulder(UUID userId);
 
 }
