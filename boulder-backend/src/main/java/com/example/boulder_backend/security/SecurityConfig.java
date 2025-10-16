@@ -7,6 +7,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -47,6 +49,9 @@ public class SecurityConfig {
 
                         // explizit öffentliche Auth-Endpunkte
                         .requestMatchers("/auth/register", "/auth/login", "/auth/refresh", "/auth/logout").permitAll() //Login & Registrierung öffentlich
+
+                        // Passwort-Reset freigeben
+                        .requestMatchers("/auth/password/**").permitAll()
                         
                         // alles andere nur mit JWT
                         .anyRequest().authenticated() // alles andere mit JWT
@@ -70,6 +75,12 @@ public class SecurityConfig {
         // Wandelt Secret-String in HMAC-SHA256-Schlüssel um
         SecretKey key = new SecretKeySpec(jwtSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
         return NimbusJwtDecoder.withSecretKey(key).build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        // passt zu deiner Verwendung im Controller/Service
+        return new BCryptPasswordEncoder();
     }
 }
 

@@ -1,14 +1,17 @@
 package com.example.boulder_backend.controller;
 
 
-import com.example.boulder_backend.dto.LoginDto;
-import com.example.boulder_backend.dto.RegisterDto;
-import com.example.boulder_backend.dto.UpdateProfileDto;
+import com.example.boulder_backend.dto.*;
 import com.example.boulder_backend.model.UserEntity;
 import com.example.boulder_backend.repository.UserRepository;
 import com.example.boulder_backend.service.AuthService;
+import com.example.boulder_backend.service.Mailer;
+import com.example.boulder_backend.service.PasswordResetService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -157,6 +160,52 @@ public class AuthController {
 
         return ResponseEntity.ok(updated);
     }
+
+    private final PasswordResetService resetService;
+    private final Mailer mailer;
+    private final PasswordEncoder passwordEncoder;
+
+    @PostMapping("/password/forgot")
+    public ResponseEntity<?> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest body,
+            HttpServletRequest req,
+            @RequestHeader(value = "User-Agent", required = false) String ua
+    ) {
+        String xff = req.getHeader("X-Forwarded-For");
+        String clientIp = (xff != null && !xff.isBlank())
+                ? xff.split(",")[0].trim()
+                : req.getRemoteAddr();
+
+        String rawToken = resetService.requestReset(body.getEmail(), clientIp, (ua != null ? ua : ""));
+
+        if (rawToken != null) {
+            String resetUrl = "https://sprayconnect.at/reset?token=" + rawToken; // ggf. Frontend-URL anpassen
+            mailer.sendPasswordReset(body.getEmail().trim(), resetUrl);
+        }
+        // Immer OK zurück (kein E-Mail-Enumeration-Leak)
+        return ResponseEntity.ok(java.util.Map.of("status", "ok"));
+    }
+
+
+    @GetMapping("/password/reset/validate")
+    public ResponseEntity<?> validateResetToken(@RequestParam String token) {
+        boolean valid = resetService.validateToken(token);
+        return ResponseEntity.ok(java.util.Map.of("valid", valid));
+    }
+
+    @Transactional
+    @PostMapping("/password/reset")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest body) {
+        String newHash = passwordEncoder.encode(body.getNewPassword());
+        resetService.consumeTokenAndReset(body.getToken(), newHash, (userId, hash) -> {
+            var user = userRepository.findById(userId).orElseThrow();
+            user.setPasswordHash(hash);
+            userRepository.save(user);
+        });
+        return ResponseEntity.ok(java.util.Map.of("status", "password-updated"));
+    }
+
+
 
 
 
