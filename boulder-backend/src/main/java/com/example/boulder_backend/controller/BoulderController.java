@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/boulders")
+@RequestMapping("/api/boulders")
 @RequiredArgsConstructor
 public class BoulderController {
 

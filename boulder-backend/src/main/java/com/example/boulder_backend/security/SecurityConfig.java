@@ -48,10 +48,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/feedback", "/api/feedback/**").permitAll()
 
                         // explizit öffentliche Auth-Endpunkte
-                        .requestMatchers("/auth/register", "/auth/login", "/auth/refresh", "/auth/logout").permitAll() //Login & Registrierung öffentlich
+                        .requestMatchers("api/auth/register", "api/auth/login", "api/auth/refresh", "api/auth/logout").permitAll() //Login & Registrierung öffentlich
 
                         // Passwort-Reset freigeben
-                        .requestMatchers("/auth/password/**").permitAll()
+                        .requestMatchers("api/auth/password/**").permitAll()
                         
                         // alles andere nur mit JWT
                         .anyRequest().authenticated() // alles andere mit JWT

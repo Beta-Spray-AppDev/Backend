@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/auth") // Basis-URL
+@RequestMapping("/api/auth") // Basis-URL
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
